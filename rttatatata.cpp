@@ -27,6 +27,16 @@ void lore_say(const string& message) {
     cout << "*" << message << "*" << endl;
 }
 
+class Player {
+    public:
+    int health;
+    string player_name;
+    
+};
+
+Player player;
+
+
 struct Dialogue {
     string character_name;
     string message;
@@ -40,6 +50,24 @@ struct Choice {
 struct ChoiceMenu {
     string choice_title;
     vector<Choice> choices;
+};
+
+struct QuestionOption {
+    string option_description;
+    bool is_correct;
+};
+
+struct Question {
+    string question;
+    vector<QuestionOption> options;
+};
+
+struct Door {
+    string door_name;
+    vector<Question> questions;
+    string door_description;
+    string door_open_message;
+    string door_fail_message;
 };
 
 void handle_dialogue(const vector<Dialogue>& dialogues) {
@@ -108,6 +136,97 @@ void lore_greedy() {
 
 }
 
+
+bool handle_first_door_questions() {
+    vector<Question> questions = {
+        {
+            "Co to jest C++?",
+            {
+                {"Język programowania", true},
+                {"Język obcy", false},
+                {"Narzędzie graficzne", false},
+                {"System operacyjny", false}
+            }
+        },
+        {
+            "Co to jest zmienna?",
+            {
+                {"Miejsce w pamięci do przechowywania danych", true},
+                {"Program komputerowy", false},
+                {"Rodzaj pętli w programowaniu", false},
+                {"Funkcja w systemie operacyjnym", false}
+            }
+        },
+        {
+            "Co to jest funkcja?",
+            {
+                {"Blok kodu wykonujący określone zadanie", true},
+                {"Rodzaj zmiennej", false},
+                {"Pojedyncza linia kodu", false},
+                {"System operacyjny", false}
+            }
+        },
+        {
+            "Co to jest pętla?",
+            {
+                {"Blok kodu, który wykonuje się wielokrotnie", true},
+                {"Zmienna w programowaniu", false},
+                {"Rodzaj tablicy", false},
+                {"Metoda sortowania", false}
+            }
+        },
+        {
+            "Co to jest tablica?",
+            {
+                {"Struktura danych przechowująca wiele wartości tego samego typu", true},
+                {"Rodzaj pętli", false},
+                {"Funkcja matematyczna", false},
+                {"Zmienna o stałej wartości", false}
+            }
+        }
+    };
+
+
+
+    int correct_answers = 0;
+    int questions_amt = 0;
+
+    for (const auto& question : questions) {
+        cout << question.question << endl;
+        questions_amt++;
+        for (int i = 0; i < question.options.size(); i++) {
+            cout << i + 1 << ") " << question.options[i].option_description << endl;
+        }
+
+        awaiting_input = true;
+        while (awaiting_input) {
+            if (_kbhit()) {
+                ch = _getch();
+                if (ch >= '1' && ch <= '4') {
+                    int selected_option = ch - '0';
+                    if (question.options[selected_option - 1].is_correct) {
+                        cout << "Dobra odpowiedź!" << endl;
+                        correct_answers++;
+                    } else {
+                        cout << "Zła odpowiedź!" << endl;
+                    }
+                    awaiting_input = false;
+                }
+            }
+            Sleep(50);
+        }
+    }
+
+    bool passed = false;
+
+        if(correct_answers == questions_amt) {
+            passed = true;
+        }
+
+    return passed;
+
+};
+
 void lore_introduction() {
     vector<Dialogue> dialogues = {
         {"BOB", "Cześć! Jestem bob!"},
@@ -119,7 +238,7 @@ void lore_introduction() {
     };
 
     handle_dialogue(dialogues);
-    lore_say("Bob wskazuje na drzwi, które prowadzą do pomiesczenia. Wchodzisz do środka i widzisz elektroniczny zamkek na ścianie...");
+    lore_say("Bob wchodzi do pomiesczenia. Idziesz za nim i widzisz elektroniczny zamkek na ścianie...");
 
 
     vector<Dialogue> dialogues_2 = {
@@ -129,7 +248,15 @@ void lore_introduction() {
     };
 
     handle_dialogue(dialogues_2);
+
+    if (handle_first_door_questions()) {
+        lore_say("Zamek otwiera się! Bob i ty przechodzicie do kolejnego pomieszczenia...");
+    } else {
+        lore_say("Zamek nie otwiera się! Bob i ty musicie wrócić do początku...");
+        exit(0);
+    }
 }
+
 
 void lore_branch_3() {
     vector<Dialogue> dialogues = {
@@ -209,9 +336,18 @@ void gameLoop() {
     game_running = false; 
 }
 
-int main() {
-    tip_say("Czy wiesz, że możesz przejść do kolejnego dialogu klikając spację? Spróbuj teraz!");
-    gameLoop();
+// int main() {
+//     tip_say("Czy wiesz, że możesz przejść do kolejnego dialogu klikając spację? Spróbuj teraz!");
+//     gameLoop();
 
-    return 0;
+//     return 0;
+// }
+
+
+int main()
+{
+    player.health =20;
+    cout << "podaj swoj nick: ";
+    cin >> player.player_name;
+    cout << "podales" << player.player_name;
 }
