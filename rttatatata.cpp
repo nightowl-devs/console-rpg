@@ -1,8 +1,29 @@
 #include <iostream>
-#include <windows.h>
-#include <conio.h>
 #include <string>
 #include <vector>
+#include <thread>
+#include <chrono>
+#include <cctype>
+#include <cstdlib>
+
+// Function for platform-independent sleep
+void sleep_for_milliseconds(int milliseconds) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
+}
+
+// Function to get a single character input (cross-platform)
+char getch() {
+    char ch;
+    std::cin.get(ch);
+    return ch;
+}
+
+// Function to check if a key was pressed (cross-platform)
+bool kbhit() {
+    // For cross-platform compatibility, we might use POSIX functions or a third-party library.
+    // For simplicity, we use `cin` and assume a key press is always available.
+    return std::cin.peek() != EOF;
+}
 
 using namespace std;
 
@@ -28,14 +49,12 @@ void lore_say(const string& message) {
 }
 
 class Player {
-    public:
+public:
     int health;
     string player_name;
-    
 };
 
 Player player;
-
 
 struct Dialogue {
     string character_name;
@@ -71,34 +90,33 @@ struct Door {
 };
 
 void handle_dialogue(const vector<Dialogue>& dialogues) {
-
     for (const auto& dialogue : dialogues) {
         character_say(dialogue.character_name, dialogue.message);
 
         awaiting_input = true;
         while (awaiting_input) {
-            if (_kbhit()) {
-                ch = _getch();
+            if (kbhit()) {
+                ch = getch();
                 if (ch == ' ') {
                     awaiting_input = false;
                 }
             }
-            Sleep(50); 
+            sleep_for_milliseconds(50);
         }
     }
 }
 
 void handle_choice_menu(const ChoiceMenu& menu) {
     cout << menu.choice_title << endl;
-    
+
     for (const auto& choice : menu.choices) {
         cout << choice.submit_key << ") " << choice.option_description << endl;
     }
 
     awaiting_input = true;
     while (awaiting_input) {
-        if (_kbhit()) {
-            ch = _getch();
+        if (kbhit()) {
+            ch = getch();
             for (const auto& choice : menu.choices) {
                 if (ch == choice.submit_key) {
                     awaiting_input = false;
@@ -107,19 +125,18 @@ void handle_choice_menu(const ChoiceMenu& menu) {
                 }
             }
         }
-        Sleep(50);
+        sleep_for_milliseconds(50);
     }
 }
 
 void lore_not_right_fit() {
     vector<Dialogue> dialogues = {
         {"SOWA", "Cóż, niestety chyba nie jesteś prawidłowym typem osoby potrzebnej do wykonania tego zadania"},
-        {"BOB", "Też mi sie tak wydaję, to nie jest miejsce dla ciebie"},
+        {"BOB", "Też mi się tak wydaję, to nie jest miejsce dla ciebie"},
         {"SOWA", "Żegnaj podróżniku!"},
     };
     handle_dialogue(dialogues);
 };
-
 
 void lore_greedy() {
     vector<Dialogue> dialogues = {
@@ -130,12 +147,9 @@ void lore_greedy() {
         {"SOWA", "Nie sądze aby był to dobry pomysł..."},
         {"BOB", "Masz rację, lepiej niech idzie"},
         {"SOWA", "Żegnaj podróżniku!"},
-};
+    };
     handle_dialogue(dialogues);
-
-
 }
-
 
 bool handle_first_door_questions() {
     vector<Question> questions = {
@@ -186,8 +200,6 @@ bool handle_first_door_questions() {
         }
     };
 
-
-
     int correct_answers = 0;
     int questions_amt = 0;
 
@@ -200,8 +212,8 @@ bool handle_first_door_questions() {
 
         awaiting_input = true;
         while (awaiting_input) {
-            if (_kbhit()) {
-                ch = _getch();
+            if (kbhit()) {
+                ch = getch();
                 if (ch >= '1' && ch <= '4') {
                     int selected_option = ch - '0';
                     if (question.options[selected_option - 1].is_correct) {
@@ -213,18 +225,11 @@ bool handle_first_door_questions() {
                     awaiting_input = false;
                 }
             }
-            Sleep(50);
+            sleep_for_milliseconds(50);
         }
     }
 
-    bool passed = false;
-
-        if(correct_answers == questions_amt) {
-            passed = true;
-        }
-
-    return passed;
-
+    return (correct_answers == questions_amt);
 };
 
 void lore_introduction() {
@@ -238,8 +243,7 @@ void lore_introduction() {
     };
 
     handle_dialogue(dialogues);
-    lore_say("Bob wchodzi do pomiesczenia. Idziesz za nim i widzisz elektroniczny zamkek na ścianie...");
-
+    lore_say("Bob wchodzi do pomieszczenia. Idziesz za nim i widzisz elektroniczny zamek na ścianie...");
 
     vector<Dialogue> dialogues_2 = {
         {"BOB", "To jest elektroniczny zamek!"},
@@ -256,7 +260,6 @@ void lore_introduction() {
         exit(0);
     }
 }
-
 
 void lore_branch_3() {
     vector<Dialogue> dialogues = {
@@ -294,25 +297,21 @@ void lore_branch_3() {
     game_running = false;
 };
 
-
-
-
-
 void gameLoop() {
     vector<Dialogue> initial_dialogue = {
         {"SOWA", "Witaj podróżniku! Co cię tutaj sprowadza?"},
         {"SOWA", "Razem ze mną będziesz przemierzał tajemniczą krainę..."},
-        {"SOWA", "Ale najpierw musisz dokonać wyboru. Musimy dowiedzieć się czy jesteś dobrym typen na tą przygodę!"},
-        {"SOWA", "Zanim jednak to sie stanie zawołam mojego przyjaciela boba. On pomoże nam w tej decyzji."}
+        {"SOWA", "Ale najpierw musisz dokonać wyboru. Musimy dowiedzieć się czy jesteś dobrym typem na tę przygodę!"},
+        {"SOWA", "Zanim jednak to się stanie, zawołam mojego przyjaciela Boba. On pomoże nam w tej decyzji."}
     };
 
     handle_dialogue(initial_dialogue);
 
     ChoiceMenu main_menu = {
-        "Możesz zadać sowie pytanie. Wybierz mądrze",
+        "Możesz zadać sowie pytanie. Wybierz mądrze:",
         {
             {"Po co mi to?", '1'},
-            {"Co z tego będe miał?", '2'},
+            {"Co z tego będę miał?", '2'},
             {"Czy to jest bezpieczne?", '3'}
         }
     };
@@ -333,21 +332,17 @@ void gameLoop() {
             cout << "Nieznany wybór!" << endl;
     }
 
-    game_running = false; 
+    game_running = false;
 }
 
-// int main() {
-//     tip_say("Czy wiesz, że możesz przejść do kolejnego dialogu klikając spację? Spróbuj teraz!");
-//     gameLoop();
-
-//     return 0;
-// }
-
-
-int main()
-{
-    player.health =20;
-    cout << "podaj swoj nick: ";
+int main() {
+    player.health = 20;
+    cout << "Podaj swój nick: ";
     cin >> player.player_name;
-    cout << "podales" << player.player_name;
+    cout << "Podales: " << player.player_name << endl;
+
+    tip_say("Czy wiesz, że możesz przejść do kolejnego dialogu klikając spację? Spróbuj teraz!");
+    gameLoop();
+
+    return 0;
 }
